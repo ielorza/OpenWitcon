@@ -55,6 +55,7 @@ extern "C" {
         int ok[3];
         int n;
         double tol;
+		int nSteps;/* ################################################*/
         /* @endcond */
     } ikSensorDiagnoser;
     
@@ -65,6 +66,7 @@ extern "C" {
     typedef struct ikSensorDiagnoserParams {
         int nStepsToFault; /**<number of steps the difference between two signals must exceed tolerance to trigger a fault detection*/
         double tolerance; /**<tolerance*/
+		int nIgnoredSteps; /**<number of steps ignored to avoid initialization errors *//* ################################################*/
     } ikSensorDiagnoserParams;
     
     /**

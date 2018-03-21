@@ -35,6 +35,7 @@ void ikSensorDiagnoser_initParams(ikSensorDiagnoserParams *params) {
     /* set default parameter values */
     params->nStepsToFault = 1;
     params->tolerance = 1.0;
+	params->nIgnoredSteps = 0;
 }
 
 int ikSensorDiagnoser_init(ikSensorDiagnoser *self, const ikSensorDiagnoserParams *params) {
@@ -59,24 +60,30 @@ int ikSensorDiagnoser_init(ikSensorDiagnoser *self, const ikSensorDiagnoserParam
     for (i = 0; i < 3; i++) self->ok[i] = self->n;
     
     return err;
+
+	self->nSteps = params->nIgnoredSteps; /* ################################################*/
 }
 
 void ikSensorDiagnoser_step(ikSensorDiagnoser *self, int ok[3], const double signals[3]) {
     int i,j;
     int _ok[3] = {0,0,0};
-    
-    /* check tolerances */
-    for(i = 0; i < 3; i++) {
-        j = i + 1;
-        if(j > 2) j = 0;
-        if(self->tol > fabs(signals[i] - signals[j])) {
-            if (self->ok[i] && self->ok[j]) {
-                _ok[i] = 1;
-                _ok[j] = 1;
-            }
-        }
-    }
-    
+	static int _t = 0; /*################################################*/
+	/* check tolerances */
+	for(i = 0; i < 3; i++) {
+		j = i + 1;
+		if(j > 2) j = 0;
+			if(self->tol > fabs(signals[i] - signals[j])) {
+				if (0<self->nSteps && _t<self->nSteps){ /*################################################*/
+					_ok[i] = 1; /*################################################*/
+					_ok[j] = 1; /*################################################*/
+					_t++; /*################################################*/
+				} /*################################################*/
+				if (self->ok[i] && self->ok[j]) {
+					_ok[i] = 1;
+					_ok[j] = 1;
+				}
+			}
+	} 
     /* compute steps left for fault detection */
     for(i = 0; i < 3; i++) {
         self->ok[i]--;
@@ -90,7 +97,7 @@ void ikSensorDiagnoser_step(ikSensorDiagnoser *self, int ok[3], const double sig
 
 void ikSensorDiagnoser_getOutput(const ikSensorDiagnoser *self, int ok[3]) {
     int i;
-    
+
     for(i = 0; i < 3; i++) ok[i] = self->ok[i] > 0;
 }
 
