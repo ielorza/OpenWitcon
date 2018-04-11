@@ -54,44 +54,51 @@ int ikSensorDiagnoser_init(ikSensorDiagnoser *self, const ikSensorDiagnoserParam
         self->tol = 1.0;
         if (!err) err = -2;
     }
-    
     /* initilise fault states */
     for (i = 0; i < 3; i++) self->ok[i] = self->n;
-    
+
     return err;
+
 }
 
 void ikSensorDiagnoser_step(ikSensorDiagnoser *self, int ok[3], const double signals[3]) {
     int i,j;
     int _ok[3] = {0,0,0};
-    
-    /* check tolerances */
-    for(i = 0; i < 3; i++) {
-        j = i + 1;
-        if(j > 2) j = 0;
-        if(self->tol > fabs(signals[i] - signals[j])) {
-            if (self->ok[i] && self->ok[j]) {
-                _ok[i] = 1;
-                _ok[j] = 1;
-            }
-        }
-    }
-    
+	/* check tolerances */
+	for(i = 0; i < 3; i++) {
+		j = i + 1;
+		if(j > 2) j = 0;
+		if(self->tol > fabs(signals[i] - signals[j])) {
+			if (self->ok[i] && self->ok[j]) {
+				_ok[i] = 1;
+				_ok[j] = 1;
+			}
+		}
+	} 
     /* compute steps left for fault detection */
     for(i = 0; i < 3; i++) {
         self->ok[i]--;
         self->ok[i] = self->ok[i] > 0 ? self->ok[i] : 0;
         if (_ok[i]) self->ok[i] = self->n;
     }
-    
+    	
+	/*
+	####################################################################
+	*/	
+	if(self->ResetSignal > 0){
+		for(i = 0; i < 3; i++) {
+		self->ok[i] = 1;
+		self->ok[i] = self->n;
+		}
+	}
     /* set outputs */
     ikSensorDiagnoser_getOutput(self, ok);
 }
 
 void ikSensorDiagnoser_getOutput(const ikSensorDiagnoser *self, int ok[3]) {
     int i;
-    
-    for(i = 0; i < 3; i++) ok[i] = self->ok[i] > 0;
+
+	for(i = 0; i < 3; i++) ok[i] = self->ok[i] > 0;
 }
 
 /* @endcond */

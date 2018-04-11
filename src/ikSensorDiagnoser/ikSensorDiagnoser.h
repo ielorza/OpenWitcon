@@ -55,6 +55,7 @@ extern "C" {
         int ok[3];
         int n;
         double tol;
+		int ResetSignal;
         /* @endcond */
     } ikSensorDiagnoser;
     
